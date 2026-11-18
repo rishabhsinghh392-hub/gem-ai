@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>Gem AI — General Education Mate</title>
+<style>
+:root{--bg:#0b1220;--panel:#111c2e;--panel2:#17243a;--line:#26364e;--text:#edf3ff;--muted:#9fb0c9;--accent:#78a7ff;--green:#7ce0b1}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+.app{max-width:980px;margin:auto;min-height:100vh;display:flex;flex-direction:column}
+header{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:#0e1727;position:sticky;top:0;z-index:2}
+.brand{display:flex;gap:12px;align-items:center}.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#78a7ff,#a78bfa);display:grid;place-items:center;color:#091326;font-weight:900;font-size:22px}.brand h1{font-size:19px;margin:0}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}
+.pill{border:1px solid #365477;border-radius:30px;padding:7px 11px;color:#b9d2ff;font-size:12px}
+main{padding:24px 18px 120px;flex:1}.welcome{text-align:center;padding:24px 8px 20px}.welcome h2{font-size:clamp(25px,5vw,36px);margin:0 0 9px}.welcome p{color:var(--muted);margin:0 auto;max-width:580px;line-height:1.5}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:20px 0 24px}.topic{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:13px 8px;border-radius:13px;text-align:center;cursor:pointer;font-size:13px}.topic span{display:block;font-size:21px;margin-bottom:5px}
+.chat{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:13px}.msg{padding:14px 16px;border-radius:16px;line-height:1.55;white-space:pre-wrap;max-width:92%}.bot{background:var(--panel);border:1px solid var(--line);align-self:flex-start}.user{background:#244778;align-self:flex-end}.who{font-size:11px;color:#a9c4ee;margin-bottom:5px;font-weight:700}.sample{font-size:12px;color:var(--muted);margin-top:8px}
+.composer-wrap{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,var(--bg) 22%);padding:20px 14px 18px}.composer{max-width:760px;margin:auto;display:flex;gap:9px;background:var(--panel);border:1px solid #3a4b65;padding:8px;border-radius:17px;box-shadow:0 8px 35px #0006}.composer input{min-width:0;flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:15px;padding:9px}.composer button{border:0;border-radius:12px;background:var(--accent);color:#091326;font-weight:800;padding:0 18px;cursor:pointer}.foot{text-align:center;color:#8293ad;font-size:11px;margin-top:8px}
+.controls{display:flex;gap:8px;align-items:center}select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:7px}
+@media(max-width:600px){header{padding:13px}.quick{grid-template-columns:repeat(2,1fr)}main{padding:12px 12px 125px}.welcome{padding-top:22px}.pill{display:none}.msg{max-width:96%}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+ <div class="brand"><div class="logo">G</div><div><h1>Gem AI</h1><p>General Education Mate</p></div></div>
+ <div class="controls"><select id="lang" aria-label="Language"><option value="en">English</option><option value="hi">हिन्दी</option></select><span class="pill">Free learning demo</span></div>
+</header>
+<main>
+ <section class="welcome"><h2>Your AI Study Partner 📚</h2><p>Learn General Studies in simple language. Ask questions, practise MCQs and prepare for competitive exams.</p></section>
+ <div class="quick">
+  <button class="topic" data-q="Explain the Preamble of the Indian Constitution"><span>⚖️</span>Indian Polity</button>
+  <button class="topic" data-q="Explain the Revolt of 1857"><span>🏛️</span>History</button>
+  <button class="topic" data-q="Give me 5 questions on Indian Geography"><span>🌍</span>Geography</button>
+  <button class="topic" data-q="Give me a General Science MCQ"><span>🔬</span>Science</button>
+ </div>
+ <div class="chat" id="chat">
+  <div class="msg bot"><div class="who">GEM AI</div>Hello! I’m Gem, your General Education Mate. Ask me a General Studies question or choose a topic above. You can also try: “Give me 5 Polity MCQs”.<div class="sample">Demo mode · Sample educational responses</div></div>
+ </div>
+</main>
+<div class="composer-wrap"><form class="composer" id="form"><input id="question" autocomplete="off" placeholder="Ask Gem anything about General Studies…" aria-label="Your question"><button type="submit">Send ➤</button></form><div class="foot">Gem AI · Quality Education for Everyone · Demo prototype</div></div>
+</div>
+<script>
+const chat=document.getElementById('chat'), input=document.getElementById('question'), lang=document.getElementById('lang');
+const bank=[
+ {keys:['preamble','संविधान की प्रस्तावना','प्रस्तावना'],en:'The Preamble is the introductory statement of the Indian Constitution. It declares India to be a Sovereign, Socialist, Secular, Democratic Republic and promises Justice, Liberty, Equality and Fraternity. Exam point: the 42nd Constitutional Amendment (1976) added the words “Socialist”, “Secular” and “Integrity”.',hi:'प्रस्तावना भारतीय संविधान का परिचयात्मक भाग है। इसमें भारत को सम्पूर्ण प्रभुत्व-संपन्न, समाजवादी, पंथनिरपेक्ष, लोकतंत्रात्मक गणराज्य बताया गया है। यह न्याय, स्वतंत्रता, समानता और बंधुता का लक्ष्य रखती है। परीक्षा तथ्य: 42वें संविधान संशोधन (1976) द्वारा “समाजवादी”, “पंथनिरपेक्ष” और “अखंडता” शब्द जोड़े गए।'},
+ {keys:['1857','revolt','विद्रोह'],en:'The Revolt of 1857 began at Meerut on 10 May 1857 and spread to several regions. Major leaders included Bahadur Shah Zafar, Rani Lakshmibai, Nana Sahib, Tantia Tope and Kunwar Singh. It had multiple causes: political annexations, economic exploitation, military grievances and social-religious fears.',hi:'1857 का विद्रोह 10 मई 1857 को मेरठ से शुरू हुआ और कई क्षेत्रों में फैल गया। प्रमुख नेताओं में बहादुर शाह ज़फ़र, रानी लक्ष्मीबाई, नाना साहेब, तात्या टोपे और कुँवर सिंह शामिल थे। इसके कारण राजनीतिक विलय, आर्थिक शोषण, सैनिक असंतोष और सामाजिक-धार्मिक आशंकाएँ थीं।'},
+ {keys:['geography','भूगोल'],en:'Here are 5 quick Indian Geography practice questions:\n1. Which is the longest river flowing entirely within India? — Godavari.\n2. Which is the largest Indian state by area? — Rajasthan.\n3. The Tropic of Cancer passes through how many Indian states? — 8.\n4. Which soil is ideal for cotton? — Black soil.\n5. Which is the highest peak located wholly within India? — Nanda Devi.',hi:'भारतीय भूगोल के 5 अभ्यास प्रश्न:\n1. पूरी तरह भारत में बहने वाली सबसे लंबी नदी? — गोदावरी।\n2. क्षेत्रफल की दृष्टि से सबसे बड़ा राज्य? — राजस्थान।\n3. कर्क रेखा भारत के कितने राज्यों से गुजरती है? — 8।\n4. कपास के लिए कौन-सी मिट्टी उपयुक्त है? — काली मिट्टी।\n5. पूरी तरह भारत में स्थित सबसे ऊँची चोटी? — नंदा देवी।'},
+ {keys:['science','विज्ञान'],en:'MCQ: Which vitamin is produced in the skin when exposed to sunlight?\nA) Vitamin A\nB) Vitamin B12\nC) Vitamin C\nD) Vitamin D\n\nCorrect answer: D) Vitamin D.\nExplanation: UVB rays help the skin synthesise vitamin D, which supports calcium absorption and bone health.',hi:'प्रश्न: सूर्य के प्रकाश में त्वचा में कौन-सा विटामिन बनता है?\nA) विटामिन A\nB) विटामिन B12\nC) विटामिन C\nD) विटामिन D\n\nसही उत्तर: D) विटामिन D।\nव्याख्या: सूर्य की UVB किरणें त्वचा में विटामिन D बनने में मदद करती हैं। यह कैल्शियम के अवशोषण और हड्डियों के स्वास्थ्य के लिए आवश्यक है।'},
+ {keys:['mcq','quiz','प्रश्न','questions'],en:'Practice MCQ — The Constitution of India came into effect on:\nA) 15 August 1947\nB) 26 November 1949\nC) 26 January 1950\nD) 2 October 1950\n\nCorrect answer: C) 26 January 1950.\nExplanation: The Constitution was adopted on 26 November 1949 and came into force on 26 January 1950.',hi:'अभ्यास प्रश्न — भारत का संविधान कब लागू हुआ?\nA) 15 अगस्त 1947\nB) 26 नवंबर 1949\nC) 26 जनवरी 1950\nD) 2 अक्टूबर 1950\n\nसही उत्तर: C) 26 जनवरी 1950।\nव्याख्या: संविधान 26 नवंबर 1949 को अंगीकृत हुआ और 26 जनवरी 1950 को लागू हुआ।'}
+];
+function add(text,cls){const d=document.createElement('div');d.className='msg '+cls; if(cls==='bot'){const w=document.createElement('div');w.className='who';w.textContent='GEM AI';d.appendChild(w)}d.appendChild(document.createTextNode(text));chat.appendChild(d);window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})}
+function answer(q){let s=q.toLowerCase();let item=bank.find(x=>x.keys.some(k=>s.includes(k)));if(item)return lang.value==='hi'?item.hi:item.en;
+ if(lang.value==='hi')return 'अच्छा सवाल! यह Gem का शुरुआती डेमो है, इसलिए अभी सीमित विषयों पर नमूना उत्तर उपलब्ध हैं। आप संविधान की प्रस्तावना, 1857 का विद्रोह, भारतीय भूगोल या विज्ञान MCQ पूछकर देखें। लाइव AI जोड़ने के बाद Gem व्यापक प्रश्नों के उत्तर दे सकेगा।';
+ return 'Good question! This is the first Gem demo, so it currently includes sample answers for a few topics. Try the Preamble, Revolt of 1857, Indian Geography or a Science MCQ. Once a live AI model is connected, Gem can answer a much wider range of questions.';
+}
+function send(q){q=q.trim();if(!q)return;add(q,'user');input.value='';setTimeout(()=>add(answer(q),'bot'),350)}
+document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();send(input.value)});
+document.querySelectorAll('.topic').forEach(b=>b.addEventListener('click',()=>send(b.dataset.q)));
+lang.addEventListener('change',()=>{input.placeholder=lang.value==='hi'?'सामान्य अध्ययन के बारे में अपना सवाल पूछें…':'Ask Gem anything about General Studies…'});
+</script>
+</body></html>
