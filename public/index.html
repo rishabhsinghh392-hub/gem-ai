@@ -1,121 +1,133 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#101827">
-<title>Gem AI — General Education Mate</title>
-<style>
-:root{--bg:#0b1220;--panel:#111c2e;--panel2:#17243a;--line:#26364e;--text:#edf3ff;--muted:#9fb0c9;--accent:#78a7ff;--green:#7ce0b1}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
-.app{max-width:980px;margin:auto;min-height:100vh;display:flex;flex-direction:column}
-header{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:#0e1727;position:sticky;top:0;z-index:2}
-.brand{display:flex;gap:12px;align-items:center}.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#78a7ff,#a78bfa);display:grid;place-items:center;color:#091326;font-weight:900;font-size:22px}.brand h1{font-size:19px;margin:0}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}
-.pill{border:1px solid #365477;border-radius:30px;padding:7px 11px;color:#b9d2ff;font-size:12px}
-main{padding:24px 18px 120px;flex:1}.welcome{text-align:center;padding:24px 8px 20px}.welcome h2{font-size:clamp(25px,5vw,36px);margin:0 0 9px}.welcome p{color:var(--muted);margin:0 auto;max-width:580px;line-height:1.5}
-.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:20px 0 24px}.topic{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:13px 8px;border-radius:13px;text-align:center;cursor:pointer;font-size:13px}.topic span{display:block;font-size:21px;margin-bottom:5px}
-.chat{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:13px}.msg{padding:14px 16px;border-radius:16px;line-height:1.55;white-space:pre-wrap;max-width:92%}.bot{background:var(--panel);border:1px solid var(--line);align-self:flex-start}.user{background:#244778;align-self:flex-end}.who{font-size:11px;color:#a9c4ee;margin-bottom:5px;font-weight:700}.sample{font-size:12px;color:var(--muted);margin-top:8px}
-.composer-wrap{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,var(--bg) 22%);padding:20px 14px 18px}.composer{max-width:760px;margin:auto;display:flex;gap:9px;background:var(--panel);border:1px solid #3a4b65;padding:8px;border-radius:17px;box-shadow:0 8px 35px #0006}.composer input{min-width:0;flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:15px;padding:9px}.composer button{border:0;border-radius:12px;background:var(--accent);color:#091326;font-weight:800;padding:0 18px;cursor:pointer}.foot{text-align:center;color:#8293ad;font-size:11px;margin-top:8px}
-.controls{display:flex;gap:8px;align-items:center}select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:7px}
-@media(max-width:600px){header{padding:13px}.quick{grid-template-columns:repeat(2,1fr)}main{padding:12px 12px 125px}.welcome{padding-top:22px}.pill{display:none}.msg{max-width:96%}}
-</style>
-</head>
-<body>
-<div class="app">
-<header>
- <div class="brand"><div class="logo">G</div><div><h1>Gem AI</h1><p>General Education Mate</p></div></div>
- <div class="controls"><select id="lang" aria-label="Language"><option value="en">English</option><option value="hi">हिन्दी</option></select><span class="pill">Free learning demo</span></div>
-</header>
-<main>
- <section class="welcome"><h2>Your AI Study Partner 📚</h2><p>Learn General Studies in simple language. Ask questions, practise MCQs and prepare for competitive exams.</p></section>
- <div class="quick">
-  <button class="topic" data-q="Explain the Preamble of the Indian Constitution"><span>⚖️</span>Indian Polity</button>
-  <button class="topic" data-q="Explain the Revolt of 1857"><span>🏛️</span>History</button>
-  <button class="topic" data-q="Give me 5 questions on Indian Geography"><span>🌍</span>Geography</button>
-  <button class="topic" data-q="Give me a General Science MCQ"><span>🔬</span>Science</button>
- </div>
- <div class="chat" id="chat">
-  <div class="msg bot"><div class="who">GEM AI</div>Hello! I’m Gem, your General Education Mate. Ask me a General Studies question or choose a topic above. You can also try: “Give me 5 Polity MCQs”.<div class="sample">Demo mode · Sample educational responses</div></div>
- </div>
-</main>
-<div class="composer-wrap"><form class="composer" id="form"><input id="question" autocomplete="off" placeholder="Ask Gem anything about General Studies…" aria-label="Your question"><button type="submit">Send ➤</button></form><div class="foot">Gem AI · Quality Education for Everyone · Demo prototype</div></div>
-</div>
+import express from 'express';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-<script>
-const chat = document.getElementById('chat');
-const input = document.getElementById('question');
-const lang = document.getElementById('lang');
-const form = document.getElementById('form');
-const sendButton = form.querySelector('button');
-const history = [];
-let busy = false;
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const app = express();
 
-function add(text, cls) {
-  const d = document.createElement('div');
-  d.className = 'msg ' + cls;
-  if (cls === 'bot') {
-    const w = document.createElement('div');
-    w.className = 'who';
-    w.textContent = 'GEM AI';
-    d.appendChild(w);
-  }
-  d.appendChild(document.createTextNode(text));
-  chat.appendChild(d);
-  window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
-  return d;
-}
+app.use(express.json({ limit: '1mb' }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-async function send(q) {
-  q = q.trim();
-  if (!q || busy) return;
+const MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-20b';
 
-  busy = true;
-  sendButton.disabled = true;
-  add(q, 'user');
-  input.value = '';
-  history.push({role: 'user', content: q});
+app.get('/api/health', (_req, res) => {
+  res.json({
+    ok: true,
+    aiConfigured: Boolean(process.env.GROQ_API_KEY),
+    provider: 'Groq',
+    model: MODEL
+  });
+});
 
-  const pending = add('Thinking...', 'bot');
-
+app.post('/api/chat', async (req, res) => {
   try {
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        messages: history,
-        language: lang.value
-      })
+    if (!process.env.GROQ_API_KEY) {
+      return res.status(503).json({
+        error: 'AI is not configured. Add GROQ_API_KEY in Render.'
+      });
+    }
+
+    const { messages, language } = req.body ?? {};
+
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({
+        error: 'Please send a question.'
+      });
+    }
+
+    const safeMessages = messages.slice(-20).map(m => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: String(m.content ?? '').slice(0, 8000)
+    }));
+
+    const langInstruction = language === 'hi'
+      ? 'Reply in clear, natural Hindi. Keep technical terms in English where useful.'
+      : language === 'en'
+        ? 'Reply in clear, accessible English.'
+        : 'Reply in the language used by the student.';
+
+    const systemMessage = {
+      role: 'system',
+      content: `You are Gem, a helpful AI education tutor.
+
+Your name is Gem – General Education Mate.
+
+Help students with:
+- UPSC preparation
+- SSC examinations
+- Banking examinations
+- Railway examinations
+- State PCS
+- General Studies
+- History and Geography
+- Indian Polity
+- Science and Technology
+- Mathematics and Reasoning
+- Current Affairs
+- School and college subjects
+
+Give accurate, detailed and easy-to-understand answers.
+
+For MCQs, provide four options, the correct answer and an explanation.
+
+Explain difficult concepts step by step.
+Use examples wherever helpful.
+Use headings and bullet points for readability.
+Never invent facts or pretend to have live information.
+If unsure, clearly say so.
+
+${langInstruction}`
+    };
+
+    const upstream = await fetch(
+      'https://api.groq.com/openai/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          messages: [systemMessage, ...safeMessages],
+          temperature: 0.6,
+          max_completion_tokens: 2048
+        })
+      }
+    );
+
+    const data = await upstream.json();
+
+    if (!upstream.ok) {
+      console.error('Groq API error:', data);
+      return res.status(502).json({
+        error: data?.error?.message ||
+          `Groq returned HTTP ${upstream.status}`
+      });
+    }
+
+    const answer = data.choices?.[0]?.message?.content;
+
+    if (!answer) {
+      return res.status(502).json({
+        error: 'Gem could not generate an answer. Please try again.'
+      });
+    }
+
+    res.json({ answer });
+
+  } catch (err) {
+    console.error('Gem chat error:', err);
+
+    res.status(500).json({
+      error: 'Something went wrong. Please try again.'
     });
-
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'AI request failed');
-
-    const answer = data.answer || 'Please try again.';
-    pending.lastChild.textContent = answer;
-    history.push({role: 'assistant', content: answer});
-  } catch (error) {
-    history.pop();
-    pending.lastChild.textContent = 'Sorry! ' + error.message;
-  } finally {
-    busy = false;
-    sendButton.disabled = false;
-    input.focus();
   }
-}
-
-form.addEventListener('submit', e => {
-  e.preventDefault();
-  send(input.value);
 });
 
-document.querySelectorAll('.topic').forEach(button => {
-  button.addEventListener('click', () => send(button.dataset.q));
+const port = Number(process.env.PORT || 3000);
+
+app.listen(port, () => {
+  console.log(`Gem AI running on port ${port}`);
 });
 
-lang.addEventListener('change', () => {
-  input.placeholder = lang.value === 'hi'
-    ? 'सामान्य अध्ययन के बारे में अपना सवाल पूछें…'
-    : 'Ask Gem anything about General Studies…';
-});
-</script>
-</body></html> 
