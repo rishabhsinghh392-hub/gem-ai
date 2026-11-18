@@ -40,6 +40,8 @@ main{padding:24px 18px 120px;flex:1}.welcome{text-align:center;padding:24px 8px 
 </main>
 <div class="composer-wrap"><form class="composer" id="form"><input id="question" autocomplete="off" placeholder="Ask Gem anything about General Studies…" aria-label="Your question"><button type="submit">Send ➤</button></form><div class="foot">Gem AI · Quality Education for Everyone · Demo prototype</div></div>
 </div>
+
+<script>
 const chat = document.getElementById('chat');
 const input = document.getElementById('question');
 const lang = document.getElementById('lang');
@@ -62,68 +64,42 @@ function add(text, cls) {
 
   d.appendChild(document.createTextNode(text));
   chat.appendChild(d);
-
-  window.scrollTo({
-    top: document.body.scrollHeight,
-    behavior: 'smooth'
-  });
-
+  window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
   return d;
 }
 
 async function send(q) {
   q = q.trim();
-
   if (!q || busy) return;
 
   busy = true;
   sendButton.disabled = true;
-
   add(q, 'user');
   input.value = '';
 
-  history.push({
-    role: 'user',
-    content: q
-  });
+  history.push({role: 'user', content: q});
 
   const pending = add(
-    lang.value === 'hi' ? 'सोच रहा हूँ...' : 'Thinking...',
-    'bot'
+    lang.value === 'hi' ? 'सोच रहा हूँ...' : 'Thinking...', 'bot'
   );
 
   try {
     const response = await fetch('/api/chat', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        messages: history,
-        language: lang.value
-      })
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({messages: history, language: lang.value})
     });
 
     const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'AI request failed');
-    }
+    if (!response.ok) throw new Error(data.error || 'AI request failed');
 
     const answer = data.answer || 'Please try again.';
-
     pending.lastChild.textContent = answer;
-
-    history.push({
-      role: 'assistant',
-      content: answer
-    });
+    history.push({role: 'assistant', content: answer});
 
   } catch (error) {
     history.pop();
-    pending.lastChild.textContent =
-      'Sorry! ' + error.message +
-      '. Please try again.';
+    pending.lastChild.textContent = 'Sorry! ' + error.message;
   } finally {
     busy = false;
     sendButton.disabled = false;
@@ -131,15 +107,13 @@ async function send(q) {
   }
 }
 
-form.addEventListener('submit', function(e) {
+form.addEventListener('submit', e => {
   e.preventDefault();
   send(input.value);
 });
 
 document.querySelectorAll('.topic').forEach(button => {
-  button.addEventListener('click', () => {
-    send(button.dataset.q);
-  });
+  button.addEventListener('click', () => send(button.dataset.q));
 });
 
 lang.addEventListener('change', () => {
@@ -147,3 +121,6 @@ lang.addEventListener('change', () => {
     ? 'सामान्य अध्ययन के बारे में अपना सवाल पूछें…'
     : 'Ask Gem anything about General Studies…';
 });
+</script>
+</body>
+</html>
