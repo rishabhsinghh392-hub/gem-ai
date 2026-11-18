@@ -202,6 +202,7 @@ button:disabled {cursor:not-allowed;opacity:.6}
 
 </div>
 
+
 <script>
 const chat = document.getElementById("chat");
 const question = document.getElementById("question");
@@ -210,4 +211,89 @@ const send = document.getElementById("send");
 let history = [];
 
 function addMessage(text, type) {
+  const div = document.createElement("div");
+  div.className = "message " + type;
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function askTopic(text) {
+  question.value = text;
+  sendMessage();
+}
+
+async function sendMessage() {
+  const message = question.value.trim();
+
+  if (!message || send.disabled) return;
+
+  document.getElementById("welcome")?.remove();
+
+  addMessage(message, "user");
+  question.value = "";
+  send.disabled = true;
+
+  history.push({
+    role: "user",
+    content: message
+  });
+
+  const loading = document.createElement("div");
+  loading.className = "message bot";
+  loading.textContent = "Gem AI is thinking...";
+  chat.appendChild(loading);
+
+  try {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        messages: history,
+        language: "auto"
+      })
+    });
+
+    const data = await response.json();
+
+    loading.remove();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Server error");
+    }
+
+    if (!data.answer) {
+      throw new Error("No answer received from AI");
+    }
+
+    history.push({
+      role: "assistant",
+      content: data.answer
+    });
+
+    addMessage(data.answer, "bot");
+
+  } catch (error) {
+    loading.remove();
+    history.pop();
+    addMessage("Sorry! " + error.message, "bot");
+
+  } finally {
+    send.disabled = false;
+    question.focus();
+  }
+}
+
+question.addEventListener("keydown", function(event) {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage();
+  }
+});
+</script>
+</body>
+</html>
+
  
