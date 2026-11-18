@@ -47,21 +47,18 @@ const input = document.getElementById('question');
 const lang = document.getElementById('lang');
 const form = document.getElementById('form');
 const sendButton = form.querySelector('button');
-
 const history = [];
 let busy = false;
 
 function add(text, cls) {
   const d = document.createElement('div');
   d.className = 'msg ' + cls;
-
   if (cls === 'bot') {
     const w = document.createElement('div');
     w.className = 'who';
     w.textContent = 'GEM AI';
     d.appendChild(w);
   }
-
   d.appendChild(document.createTextNode(text));
   chat.appendChild(d);
   window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
@@ -76,18 +73,18 @@ async function send(q) {
   sendButton.disabled = true;
   add(q, 'user');
   input.value = '';
-
   history.push({role: 'user', content: q});
 
-  const pending = add(
-    lang.value === 'hi' ? 'सोच रहा हूँ...' : 'Thinking...', 'bot'
-  );
+  const pending = add('Thinking...', 'bot');
 
   try {
     const response = await fetch('/api/chat', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({messages: history, language: lang.value})
+      body: JSON.stringify({
+        messages: history,
+        language: lang.value
+      })
     });
 
     const data = await response.json();
@@ -96,7 +93,6 @@ async function send(q) {
     const answer = data.answer || 'Please try again.';
     pending.lastChild.textContent = answer;
     history.push({role: 'assistant', content: answer});
-
   } catch (error) {
     history.pop();
     pending.lastChild.textContent = 'Sorry! ' + error.message;
@@ -122,5 +118,4 @@ lang.addEventListener('change', () => {
     : 'Ask Gem anything about General Studies…';
 });
 </script>
-</body>
-</html>
+</body></html> 
