@@ -1,133 +1,213 @@
-import express from 'express';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const app = express();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b1220">
+<title>Gem AI – General Education Mate</title>
 
-app.use(express.json({ limit: '1mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+<style>
+:root {
+  --bg:#0b1220;
+  --panel:#111c2e;
+  --panel2:#17243a;
+  --line:#26364e;
+  --text:#edf3ff;
+  --muted:#9aabc4;
+  --accent:#6d8cff;
+  --green:#27c99a;
+}
+* {box-sizing:border-box}
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,sans-serif;
+}
+.app {
+  max-width:900px;
+  height:100dvh;
+  margin:auto;
+  display:flex;
+  flex-direction:column;
+}
+header {
+  padding:17px;
+  background:var(--panel);
+  border-bottom:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.logo {
+  width:43px;height:43px;
+  display:grid;place-items:center;
+  background:linear-gradient(135deg,#6388ff,#9c6cff);
+  border-radius:13px;
+  font-size:23px;font-weight:bold;
+}
+header h2 {margin:0;font-size:19px}
+header p {margin:4px 0 0;color:var(--muted);font-size:12px}
+.status {
+  margin-left:auto;
+  color:var(--green);
+  font-size:12px;
+}
+.topics {
+  display:flex;gap:9px;
+  padding:13px;
+  overflow-x:auto;
+  background:var(--panel);
+}
+.topics button,.suggestions button {
+  background:var(--panel2);
+  color:var(--text);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:9px 13px;
+  white-space:nowrap;
+  cursor:pointer;
+}
+.chat {
+  flex:1;
+  overflow-y:auto;
+  padding:20px 15px;
+}
+.welcome {
+  text-align:center;
+  margin:45px auto 25px;
+  max-width:550px;
+}
+.welcome h1 {font-size:29px;margin-bottom:10px}
+.welcome p {color:var(--muted);line-height:1.6}
+.message {
+  max-width:85%;
+  margin:14px 0;
+  padding:13px 15px;
+  border-radius:15px;
+  line-height:1.65;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.user {
+  margin-left:auto;
+  background:#304b86;
+}
+.bot {
+  margin-right:auto;
+  background:var(--panel);
+  border:1px solid var(--line);
+}
+.bot strong {color:#8daaff}
+.suggestions {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px;
+  margin-top:20px;
+}
+.input-area {
+  padding:13px;
+  background:var(--panel);
+  border-top:1px solid var(--line);
+}
+.input-box {
+  display:flex;
+  gap:9px;
+  max-width:850px;
+  margin:auto;
+}
+textarea {
+  flex:1;
+  resize:none;
+  min-height:48px;
+  max-height:130px;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:13px;
+  padding:14px;
+  color:white;
+  font-size:15px;
+  outline:none;
+}
+.send {
+  width:50px;
+  border:0;
+  border-radius:13px;
+  background:var(--accent);
+  color:white;
+  font-size:21px;
+  cursor:pointer;
+}
+.send:disabled {opacity:.5}
+.footer {
+  text-align:center;
+  color:var(--muted);
+  font-size:11px;
+  margin-top:9px;
+}
+button:disabled {cursor:not-allowed;opacity:.6}
+@media(max-width:500px) {
+  .welcome h1 {font-size:24px}
+  .message {max-width:94%}
+}
+</style>
+</head>
 
-const MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-20b';
+<body>
+<div class="app">
 
-app.get('/api/health', (_req, res) => {
-  res.json({
-    ok: true,
-    aiConfigured: Boolean(process.env.GROQ_API_KEY),
-    provider: 'Groq',
-    model: MODEL
-  });
-});
+<header>
+  <div class="logo">G</div>
+  <div>
+    <h2>Gem AI</h2>
+    <p>General Education Mate</p>
+  </div>
+  <div class="status">● AI Assistant</div>
+</header>
 
-app.post('/api/chat', async (req, res) => {
-  try {
-    if (!process.env.GROQ_API_KEY) {
-      return res.status(503).json({
-        error: 'AI is not configured. Add GROQ_API_KEY in Render.'
-      });
-    }
+<div class="topics">
+  <button onclick="askTopic('Indian Polity')">🏛 Polity</button>
+  <button onclick="askTopic('Indian History')">📚 History</button>
+  <button onclick="askTopic('Indian Geography')">🌍 Geography</button>
+  <button onclick="askTopic('Indian Economy')">📈 Economy</button>
+  <button onclick="askTopic('General Science')">🔬 Science</button>
+  <button onclick="askTopic('Current Affairs')">📰 Current Affairs</button>
+</div>
 
-    const { messages, language } = req.body ?? {};
+<main class="chat" id="chat">
+  <div class="welcome" id="welcome">
+    <h1>Welcome to Gem AI 👋</h1>
+    <p>Your personal AI study companion. Ask anything about General Studies, competitive exams, or learning.</p>
 
-    if (!Array.isArray(messages) || messages.length === 0) {
-      return res.status(400).json({
-        error: 'Please send a question.'
-      });
-    }
+    <div class="suggestions">
+      <button onclick="askTopic('When was Narendra Modi born?')">When was Narendra Modi born?</button>
+      <button onclick="askTopic('Give me 5 Indian Polity MCQs')">5 Polity MCQs</button>
+      <button onclick="askTopic('Explain the Indian Constitution')">Explain Indian Constitution</button>
+      <button onclick="askTopic('Give me today’s current affairs')">Current Affairs</button>
+    </div>
+  </div>
+</main>
 
-    const safeMessages = messages.slice(-20).map(m => ({
-      role: m.role === 'assistant' ? 'assistant' : 'user',
-      content: String(m.content ?? '').slice(0, 8000)
-    }));
+<div class="input-area">
+  <div class="input-box">
+    <textarea id="question" placeholder="Ask Gem anything..." rows="1"></textarea>
+    <button class="send" id="send" onclick="sendMessage()">➤</button>
+  </div>
+  <div class="footer">
+    Gem AI • Powered by Groq • Verify important exam facts with official sources.
+  </div>
+</div>
 
-    const langInstruction = language === 'hi'
-      ? 'Reply in clear, natural Hindi. Keep technical terms in English where useful.'
-      : language === 'en'
-        ? 'Reply in clear, accessible English.'
-        : 'Reply in the language used by the student.';
+</div>
 
-    const systemMessage = {
-      role: 'system',
-      content: `You are Gem, a helpful AI education tutor.
+<script>
+const chat = document.getElementById("chat");
+const question = document.getElementById("question");
+const send = document.getElementById("send");
 
-Your name is Gem – General Education Mate.
+let history = [];
 
-Help students with:
-- UPSC preparation
-- SSC examinations
-- Banking examinations
-- Railway examinations
-- State PCS
-- General Studies
-- History and Geography
-- Indian Polity
-- Science and Technology
-- Mathematics and Reasoning
-- Current Affairs
-- School and college subjects
-
-Give accurate, detailed and easy-to-understand answers.
-
-For MCQs, provide four options, the correct answer and an explanation.
-
-Explain difficult concepts step by step.
-Use examples wherever helpful.
-Use headings and bullet points for readability.
-Never invent facts or pretend to have live information.
-If unsure, clearly say so.
-
-${langInstruction}`
-    };
-
-    const upstream = await fetch(
-      'https://api.groq.com/openai/v1/chat/completions',
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: MODEL,
-          messages: [systemMessage, ...safeMessages],
-          temperature: 0.6,
-          max_completion_tokens: 2048
-        })
-      }
-    );
-
-    const data = await upstream.json();
-
-    if (!upstream.ok) {
-      console.error('Groq API error:', data);
-      return res.status(502).json({
-        error: data?.error?.message ||
-          `Groq returned HTTP ${upstream.status}`
-      });
-    }
-
-    const answer = data.choices?.[0]?.message?.content;
-
-    if (!answer) {
-      return res.status(502).json({
-        error: 'Gem could not generate an answer. Please try again.'
-      });
-    }
-
-    res.json({ answer });
-
-  } catch (err) {
-    console.error('Gem chat error:', err);
-
-    res.status(500).json({
-      error: 'Something went wrong. Please try again.'
-    });
-  }
-});
-
-const port = Number(process.env.PORT || 3000);
-
-app.listen(port, () => {
-  console.log(`Gem AI running on port ${port}`);
-});
-
+function addMessage(text, type) {
+ 
